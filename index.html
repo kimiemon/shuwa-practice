@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>手話通訳者試験 聞き取り通訳練習</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--tx:#222;--mu:#6b6b66;--ac:#1d6b5f;--ac2:#e3f1ee;--bd:#dcdad2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171918;--card:#222524;--tx:#eceae4;--mu:#a3a29b;--ac:#5cc2b0;--ac2:#1f3631;--bd:#383c3a}}
+:root[data-theme="dark"]{--bg:#171918;--card:#222524;--tx:#eceae4;--mu:#a3a29b;--ac:#5cc2b0;--ac2:#1f3631;--bd:#383c3a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.7}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:1.3rem;margin:8px 0 2px}.sub{color:var(--mu);font-size:.85rem;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:5px 12px;font-size:.88rem;cursor:pointer}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;border:1px solid var(--bd);border-radius:10px;margin:6px 0;cursor:pointer;background:var(--card);color:var(--tx);width:100%;text-align:left;font:inherit}
+.item.on{border-color:var(--ac);background:var(--ac2)}
+.tag{font-size:.75rem;color:var(--mu)}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 18px;font:inherit;cursor:pointer}
+.btn.s{background:var(--ac2);color:var(--ac)}
+label{display:block;font-size:.88rem;margin:8px 0 2px}
+input[type=range]{width:100%}
+.ln{padding:6px 10px;border-radius:8px;margin:4px 0}.ln.a{background:var(--ac2)}.ln.b{border:1px solid var(--bd)}.ln.now{outline:2px solid var(--ac)}
+.hide{display:none}
+</style></head><body><main>
+<h1>手話通訳者試験 聞き取り通訳練習</h1>
+<p class="sub">会話形式の音声を聞きながら、手話へ通訳する練習用です。(試験形式に沿ったオリジナル教材)</p>
+
+<div class="card">
+<div class="row" id="lv"></div>
+<div class="row" id="gn"></div>
+<div id="list"></div>
+</div>
+
+<div class="card" id="pl">
+<strong id="ttl">教材を選んでください</strong>
+<div class="tag" id="meta"></div>
+<label>速度: <b id="rv">1.0</b>倍</label>
+<input type="range" id="rate" min="0.5" max="1.6" step="0.1" value="1">
+<label>会話の間(ポーズ): <b id="pv">0.8</b>秒</label>
+<input type="range" id="pause" min="0" max="4" step="0.2" value="0.8">
+<div class="row" style="margin-top:12px">
+<button class="btn" id="play">▶ 再生</button>
+<button class="btn s" id="stop">■ 停止</button>
+<button class="btn s" id="tog">スクリプト表示</button>
+</div>
+<div id="scr" class="hide"></div>
+</div>
+<p class="tag">※音声は端末の日本語音声を使用します。話者AとBは声の高さを変えています。実際の試験内容・出題形式は主催団体の公式情報でご確認ください。</p>
+
+<script>
+const D=[
+{g:"学校",l:"初級",t:"保護者面談",s:[
+["A","先生、こんにちは。今日はよろしくお願いします。"],
+["B","こんにちは。どうぞお座りください。最近の学校での様子をお話ししますね。"],
+["A","はい、お願いします。"],
+["B","授業中はとても真面目で、よく手を挙げて発表しています。ただ、給食を少し残すことがあります。"],
+["A","家では好き嫌いはあまりないのですが、緊張しているのかもしれません。"],
+["B","来週は遠足があります。お弁当と水筒、それから雨具を持たせてください。"],
+["A","集合時間は何時ですか。"],
+["B","朝八時に校庭です。遅れないようにお願いします。"],
+["A","わかりました。ありがとうございました。"]]},
+{g:"病院",l:"初級",t:"内科の受付と診察",s:[
+["A","すみません、初めて来ました。"],
+["B","保険証はお持ちですか。この問診票に、症状を書いてください。"],
+["A","三日前から熱があって、のども痛いです。"],
+["B","わかりました。体温を測りますので、こちらでお待ちください。"],
+["A","はい。"],
+["B","お名前を呼びます。診察室へどうぞ。咳は出ますか。"],
+["A","夜に少し出ます。薬のアレルギーはありません。"],
+["B","風邪だと思います。薬を三日分出します。食後に飲んでください。"],
+["A","仕事は休んだほうがいいですか。"],
+["B","熱が下がるまで、ゆっくり休んでください。"]]},
+{g:"行政",l:"中級",t:"市役所での転入手続き",s:[
+["A","先月、市外から引っ越してきました。手続きをお願いします。"],
+["B","転入届は、引っ越しから十四日以内に出す決まりです。もう過ぎていますね。"],
+["A","仕事が忙しくて来られませんでした。何か罰則はありますか。"],
+["B","場合によっては過料が科されますが、事情を伺ってから判断します。本人確認書類は持っていますか。"],
+["A","運転免許証とマイナンバーカードがあります。"],
+["B","では、住民票の手続きを進めます。国民健康保険の加入も必要ですか。"],
+["A","はい、前の会社を辞めたので、加入したいです。"],
+["B","保険料は前年の所得で決まります。後日、納付書を郵送します。"],
+["A","子どもの児童手当はどうなりますか。"],
+["B","別の窓口で申請してください。一番の番号札を取ってお待ちください。"]]},
+{g:"教育",l:"中級",t:"高校の進路相談",s:[
+["A","先生、卒業後の進路で迷っています。"],
+["B","どんな選択肢を考えていますか。"],
+["A","大学への進学と、専門学校の二つです。福祉の仕事に興味があります。"],
+["B","福祉なら、どちらにも資格取得の道があります。大学は四年、専門学校は二年か三年です。"],
+["A","学費が心配です。母は一人で働いています。"],
+["B","それなら、奨学金や授業料の減免制度があります。学校ごとに条件が違うので、資料を取り寄せましょう。"],
+["A","オープンキャンパスにも行ったほうがいいですか。"],
+["B","ぜひ行ってください。通学の方法や、授業の雰囲気を自分の目で確かめることが大切です。"],
+["A","通訳の支援があるかも聞いてみます。"],
+["B","それはいい考えですね。早めに問い合わせましょう。"]]},
+{g:"防災",l:"中級",t:"避難所の受付",s:[
+["A","すみません、地震で家が危なくなって、避難してきました。"],
+["B","ご無事でよかったです。この用紙に、お名前と家族の人数を書いてください。"],
+["A","私は耳が聞こえません。放送が聞こえないので心配です。"],
+["B","わかりました。連絡事項は、掲示板に紙で貼り出します。それから、担当者が直接お伝えします。"],
+["A","食べ物や水はどこでもらえますか。"],
+["B","体育館の入口で、午前十時と午後五時に配ります。余震があるときは、すぐに外へ出てください。"],
+["A","薬を家に忘れました。毎日飲まないといけません。"],
+["B","救護所に医師がいます。お薬手帳があれば、持って行ってください。"],
+["A","ありがとうございます。助かります。"]]},
+{g:"法律",l:"上級",t:"弁護士への賃貸トラブル相談",s:[
+["A","アパートを退去したのですが、敷金が全く返ってきません。"],
+["B","契約書は持ってきましたか。退去時の立ち会いは、ありましたか。"],
+["A","ありました。でも、修繕費として、全額が差し引かれていました。"],
+["B","経年劣化による傷みは、原則として借主が負担しなくてよいとされています。請求の明細は受け取りましたか。"],
+["A","いいえ、金額だけが書かれた通知です。納得できません。"],
+["B","まず、内訳を書面で求めましょう。それでも応じない場合は、内容証明郵便を送ります。"],
+["A","裁判になることもありますか。"],
+["B","少額訴訟という手続きもあります。ただし、時間と費用の見通しを立ててから判断してください。"],
+["A","費用はどのくらいかかりますか。"],
+["B","相談の内容によりますので、今日は見積もりをお出しします。持参した写真は、証拠として大切に保管してください。"]]},
+{g:"労働",l:"上級",t:"労働相談窓口での残業代の相談",s:[
+["A","毎月の残業が八十時間を超えていますが、残業代が一部しか出ません。"],
+["B","会社から、固定残業代という説明は受けていますか。"],
+["A","入社のとき、口頭で言われました。雇用契約書には書いていません。"],
+["B","それは重要な点です。基本給と固定残業代の区別が明確でないと、認められない場合があります。"],
+["A","タイムカードはなく、パソコンのログだけが残っています。"],
+["B","ログの記録は証拠になります。メールの送信時刻や、手帳のメモも保管してください。"],
+["A","会社に請求したら、解雇されないでしょうか。"],
+["B","正当な理由なく解雇することはできません。まず、労働基準監督署への申告という方法があります。"],
+["A","請求できる期間に、制限はありますか。"],
+["B","賃金の請求は、原則として三年で時効になります。早めに動くことをお勧めします。"]]}
+];
+const LV=["すべて","初級","中級","上級"],GN=["すべて",...new Set(D.map(d=>d.g))];
+let lv="すべて",gn="すべて",cur=null,tok=0,voices=[];
+const $=i=>document.getElementById(i);
+function chips(id,arr,get,set){$(id).innerHTML="";arr.forEach(v=>{const b=document.createElement("button");b.className="chip"+(get()===v?" on":"");b.textContent=v;b.onclick=()=>{set(v);render()};$(id).append(b)})}
+function render(){chips("lv",LV,()=>lv,v=>lv=v);chips("gn",GN,()=>gn,v=>gn=v);
+const L=$("list");L.innerHTML="";const f=D.filter(d=>(lv=="すべて"||d.l==lv)&&(gn=="すべて"||d.g==gn));
+if(!f.length)L.innerHTML='<p class="tag">該当する教材がありません。</p>';
+f.forEach(d=>{const b=document.createElement("button");b.className="item"+(cur===d?" on":"");
+b.innerHTML=`<span><b>${d.t}</b><br><span class="tag">${d.g} ・ ${d.l}</span></span><span class="tag">${est(d)}</span>`;b.onclick=()=>pick(d);L.append(b)})}
+const len=d=>d.s.reduce((a,x)=>a+x[1].length,0);
+function est(d){const r=+$("rate").value,p=+$("pause").value;const sec=len(d)/5.5/r+d.s.length*p;return "約"+Math.round(sec/6)/10+"分"}
+function pick(d){stop();cur=d;$("ttl").textContent=`${d.t}(${d.g}・${d.l})`;
+$("meta").textContent=`${d.s.length}発話 ・ ${len(d)}字`;
+$("scr").innerHTML=d.s.map((x,i)=>`<div class="ln ${x[0]=="A"?"a":"b"}" id="l${i}"><b>${x[0]}</b> ${x[1]}</div>`).join("");render()}
+function loadV(){voices=speechSynthesis.getVoices().filter(v=>v.lang.startsWith("ja"))}
+if("speechSynthesis" in window){loadV();speechSynthesis.onvoiceschanged=loadV}
+function play(){if(!cur)return alert("教材を選んでください");if(!("speechSynthesis" in window))return alert("このブラウザは音声合成に対応していません");
+stop();const my=++tok;let i=0;
+const next=()=>{if(my!==tok)return;document.querySelectorAll(".ln").forEach(e=>e.classList.remove("now"));
+if(i>=cur.s.length)return;const [sp,tx]=cur.s[i];const el=$("l"+i);el&&el.classList.add("now");
+const u=new SpeechSynthesisUtterance(tx);u.lang="ja-JP";u.rate=+$("rate").value;
+const vs=voices.length?voices[(sp=="B"&&voices.length>1)?1:0]:null;if(vs)u.voice=vs;
+u.pitch=sp=="A"?0.9:1.25;
+u.onend=()=>{i++;setTimeout(next,+$("pause").value*1000)};u.onerror=()=>{};speechSynthesis.speak(u)};next()}
+function stop(){tok++;if("speechSynthesis" in window)speechSynthesis.cancel();document.querySelectorAll(".ln").forEach(e=>e.classList.remove("now"))}
+$("play").onclick=play;$("stop").onclick=stop;
+$("tog").onclick=()=>{const s=$("scr");s.classList.toggle("hide");$("tog").textContent=s.classList.contains("hide")?"スクリプト表示":"スクリプト非表示"};
+$("rate").oninput=e=>{$("rv").textContent=(+e.target.value).toFixed(1);render()};
+$("pause").oninput=e=>{$("pv").textContent=(+e.target.value).toFixed(1);render()};
+render();
+</script></main></body></html>
